@@ -2,448 +2,1266 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
- // ?????????Ğ·??????????
-typedef struct HotelRoomInfo {
-    char room_type[50];       // ????????
-    double room_price;        // ??????
-    int total_rooms;          // ???????
-    int remaining_rooms;      // ???????
-    struct HotelRoomInfo* next;   // ??????????????????????
+#include <malloc.h>
+#include <conio.h>
+#include <windows.h>
+#define M 20			 // ÉèÖÃÃÜÂëÎ»ÊıÎª(M-1)
+char correctPassword[M]; // ÉèÖÃ³õÊ¼ÃÜÂë
+
+bool authenticate() // ´Ëº¯ÊıÓÃÓÚÑéÖ¤ÃÜÂë,ÃÜÂëÖ§³Ö(M-1)Î»µÄ×Ö·û
+{
+	FILE *fp = fopen("codeProject\\hotelManagement\\password.txt", "r");
+	if (fp == NULL)
+	{
+		printf("ÎŞ·¨´ò¿ªÎÄ¼ş»òÎÄ¼ş²»´æÔÚ\n");
+	}
+	else
+	{
+		fscanf(fp, "%s", correctPassword);
+		fclose(fp);
+	}
+	int tryCount = 1;
+	while (1)
+	{
+		if (tryCount <= 3)
+		{
+			char ch, password[M];
+			int i = 0;
+			printf("ÇëÊäÈëÃÜÂë:");
+			while ((ch = getch()) != '\r' && i <= M)
+			{
+				if (ch == '\b')
+				{
+					if (i > 0)
+					{
+						i--;
+						printf("\b \b"); // ÃÜÂëÖ§³ÖÍË¸ñµÄÊµÏÖ
+					}
+					else
+						putchar(7);
+				}
+				else
+				{
+					password[i++] = ch;
+					printf("*");
+				}
+			}
+			password[i] = '\0';
+			if (!strcmp(password, correctPassword))
+			{
+				printf("\nÃÜÂëÕıÈ·         Çë¼ÌĞø²Ù×÷\n");
+				return true;
+			}
+			else
+			{
+				printf("\nÃÜÂë´íÎó        Äú»¹ÓĞ%d´Î»ú»á\n", 3 - tryCount);
+			}
+		}
+		else
+		{
+			printf("\nÃÜÂë¾ù´íÎó        ÎŞ·¨¼ÌĞø²Ù×÷!\n");
+			return false;
+		}
+		tryCount++;
+	}
+}
+
+void changethepassword() // ¸Ãº¯ÊıÓÃÓÚĞŞ¸ÄÏµÍ³ÃÜÂë
+{
+	char ch1, ch2, password[M], repeatPassword[M];
+	int i = 0, j = 0;
+	do
+	{
+		i = 0, j = 0;
+		printf("ÇëÊäÈëĞÂÃÜÂë\n");
+		while ((ch1 = getch()) != '\r' && i <= M)
+		{
+			if (ch1 == '\b')
+			{
+				if (i > 0)
+				{
+					i--;
+					printf("\b \b"); // ÃÜÂëÖ§³ÖÍË¸ñµÄÊµÏÖ
+				}
+				else
+					putchar(7);
+			}
+			else
+			{
+				password[i++] = ch1;
+				printf("*");
+			}
+		}
+		password[i] = '\0';
+		printf("\nÇëÈ·ÈÏĞÂÃÜÂë\n");
+		while ((ch2 = getch()) != '\r' && j <= M)
+		{
+			if (ch2 == '\b')
+			{
+				if (j > 0)
+				{
+					j--;
+					printf("\b \b"); // ÃÜÂëÖ§³ÖÍË¸ñµÄÊµÏÖ
+				}
+				else
+					putchar(7);
+			}
+			else
+			{
+				repeatPassword[j++] = ch2;
+				printf("*");
+			}
+		}
+		repeatPassword[j] = '\0';
+		if (strcmp(password, repeatPassword) == 0)
+		{
+			printf("\nÃÜÂëĞŞ¸Ä³É¹¦£¡\n");
+			break;
+		}
+		printf("\nÁ½´ÎÊäÈëÃÜÂë²»Í¬£¬ÇëÔÙÉèÖÃÒ»±é\n");
+	} while (1);
+	strcpy(correctPassword, password);
+	FILE *fp = fopen("password.txt", "w");
+	if (fp == NULL)
+	{
+		printf("ÎŞ·¨´ò¿ªÃÜÂëÎÄ¼ş!\n");
+		return;
+	}
+	// Ğ´ÈëÃÜÂëµ½ÎÄ¼şÖĞ
+	fprintf(fp, "%s", correctPassword);
+	fclose(fp);
+}
+// ¶¨Òå¾ÆµêÏÖÓĞ·¿¼äĞÅÏ¢½á¹¹Ìå
+typedef struct HotelRoomInfo
+{
+	char room_type[50];			// ·¿¼äÀàĞÍ
+	double room_price;			// ·¿¼ä¼Û¸ñ
+	int total_rooms;			// ×Ü·¿¼äÊı
+	int remaining_rooms;		// Ê£Óà·¿¼äÊı
+	struct HotelRoomInfo *next; // Ö¸ÏòÏÂÒ»¸ö·¿¼äĞÅÏ¢½ÚµãµÄÖ¸Õë
 } HotelRoomInfo;
 
-// ????????????????????
-typedef struct CustomerRoomInfo {
-    char room_type[50];       // ????????
-    double room_price;        // ??????
-    struct CustomerRoomInfo* next;   // ?????????????????????????
+// ¶¨Òå¿Í»§ÒÑ¶©·¿¼äĞÅÏ¢½á¹¹Ìå
+typedef struct CustomerRoomInfo
+{
+	char room_num[50];			   // ·¿¼äºÅ
+	char room_type[50];			   // ·¿¼äÀàĞÍ
+	double room_price;			   // ·¿¼ä¼Û¸ñ
+	struct CustomerRoomInfo *next; // Ö¸ÏòÏÂÒ»¸ö¿Í»§·¿¼äĞÅÏ¢½ÚµãµÄÖ¸Õë
 } CustomerRoomInfo;
 
-// ?????????????
-typedef struct Customer {
-    char name[100];           // ???????
-    char phone[20];           // ????ç»°
-    char gender;              // ??????
-    char check_in_date[20];   // ??????????
-    CustomerRoomInfo* room_info; // ????????????????????
-    char booking_time[80];    // ???????
-    double total_price;       // ???????
-    struct Customer* next;    // ?????????????????????
+// ¶¨Òå¿Í»§ĞÅÏ¢½á¹¹Ìå
+typedef struct Customer
+{
+	char name[100];				 // ¿Í»§ĞÕÃû
+	char gender;				 // ¿Í»§ĞÔ±ğ
+	char idcard[100];			 // ¿Í»§Éí·İÖ¤
+	char phone[20];				 // ¿Í»§µç»°
+	char check_in_date[20];		 // ¿Í»§Èë×¡ÈÕÆÚ
+	CustomerRoomInfo *room_info; // Ö¸Ïò¿Í»§ÒÑ¶¨·¿¼äĞÅÏ¢µÄÖ¸Õë
+	char booking_time[80];		 // ¶©·¿Ê±¼ä
+	double total_price;			 // ¶©·¿×Ü¼Û
+	struct Customer *next;		 // Ö¸ÏòÏÂÒ»¸ö¿Í»§ĞÅÏ¢½ÚµãµÄÖ¸Õë
+	int bookedRooms;			 // ¶©·¿ÊıÁ¿
 } Customer;
 
-Customer* customer_head = NULL;  // ????????????????
+Customer *customer_head = NULL; // Ö¸Ïò¿Í»§ĞÅÏ¢Á´±íÍ·½Úµã
+
+HotelRoomInfo *hotel_room_head = NULL; // Ö¸Ïò¾Æµê·¿¼äĞÅÏ¢Á´±íÍ·½Úµã
+
+typedef struct Order
+{
+	int id;
+	int roomNumber;
+	char kind[30];
+	char date[30];
+	int price;
+	struct Order *next;
+} Order;
+
+Order *order_head = NULL;
+
+typedef struct Project
+{
+	int id;
+	char name[30];
+	int price;
+	struct Project *next;
+} Project;
+
+Project *entertainment_head = NULL; // Ö¸Ïò¾Æµê·¿¼äĞÅÏ¢Á´±íÍ·½Úµã
+
+void Room_Menu();																		   // ´òÓ¡Ö÷²Ëµ¥
+void addRoomType(const char *roomType, double price, int totalRooms, int remaining_rooms); // Ìí¼Ó·¿ĞÍĞÅÏ¢µ½Á´±íÖĞ
+void removeRoomType(const char *roomType);												   // É¾³ı·¿ĞÍ
+void saveRoomInfoToFile();																   // ½«·¿ĞÍ´æÈëÎÄ¼ş
+void displayRoomTypes();																   // Õ¹Ê¾·¿ĞÍĞÅÏ¢
+void insertCustomerNode(Customer newCustomer);
+void saveCustomersToFile();		  // ½«¿Í»§ĞÅÏ¢±£´æµ½ÎÄ¼ş
+void loadInfoFromFile();		  // ´ÓÎÄ¼ş¼ÓÔØ·¿ĞÍĞÅÏ¢ºÍ¿Í»§¶©·¿¼ÇÂ¼
+void displayCustomerInfo();		  // ÏÔÊ¾¿Í»§ĞÅÏ¢
+void bookRoom();				  // ½øĞĞ¶©·¿²Ù×÷
+void checkOut(char *idCard);	  // ÍË·¿
+void sortCustomersByTotalPrice(); // ¸ù¾İÓÃ»§¶©·¿×Ü½ğ¶î´ÓµÍµ½¸ß½øĞĞÅÅĞò
+
+void entertainment();						// Ô¤¶¨ÓéÀÖ¹¦ÄÜ×ÓÄ£¿é
+void Create(int id, char *name, int price); // ´´½¨ÓéÀÖÏîÄ¿
+void insertNewEntertainment(Project *newEntertainment);
+void saveEntertainmentToFile();
+void insertNewOrderNode(Order *newOrderNode);
+void newOrder(int id, int roomNumber, char *kind, char *data, int price);
+void Function_Menu();
+void Delete(int id);
+void Change(int id, int choice);
+void Menu();
+void Sort_choose();
+void Name_sort();
+void Charge_sort();
+void Order_choose();
+void Search_sort(int roomNumber);
+void Order_delete(int id);
+void output();
+int sum = 0;
+int nplus = 0;
+
+// Ìí¼Ó·¿ĞÍĞÅÏ¢µ½Á´±íÖĞ
+void addRoomType(const char *roomType, double price, int totalRooms, int remaining_rooms)
+{
+	HotelRoomInfo *newRoom = (HotelRoomInfo *)malloc(sizeof(HotelRoomInfo));
+
+	strcpy(newRoom->room_type, roomType);
+	newRoom->room_price = price;
+	newRoom->total_rooms = totalRooms;
+	newRoom->remaining_rooms = remaining_rooms;
+	newRoom->next = NULL;
+
+	if (hotel_room_head == NULL)
+	{
+		hotel_room_head = newRoom;
+	}
+	else
+	{
+		// ±éÀúµ½Á´±íÎ²²¿ ½«ĞÂÊı¾İ²åÈëµ½Á´±íÎ²²¿
+		HotelRoomInfo *current = hotel_room_head;
+		while (current->next != NULL)
+		{
+			current = current->next;
+		}
+		current->next = newRoom;
+	}
+}
+// É¾³ı·¿ĞÍ
+void removeRoomType(const char *roomType)
+{
+	HotelRoomInfo *current = hotel_room_head;
+	HotelRoomInfo *prev = NULL; // prevÎªÖ¸ÏòÇ°Ò»¸ö½áµãµÄÖ¸Õë
+
+	while (current != NULL)
+	{
+		if (strcmp(current->room_type, roomType) == 0)
+		{ // Èç¹ûÎªÒªÉ¾³ıµÄ·¿¼äÀàĞÍ
+			if (prev == NULL)
+			{
+				hotel_room_head = current->next;
+			}
+			else
+			{
+				prev->next = current->next;
+			}
+			free(current); // É¾³ı¸Ã½áµã
+			return;
+		}
+		prev = current;
+		current = current->next;
+	}
+}
+// ½«·¿ĞÍĞÅÏ¢´æÈëÎÄ¼ş
+void saveRoomInfoToFile()
+{
+	FILE *fp = fopen("room_info.txt", "w");
+	if (fp == NULL)
+	{
+		printf("ÎŞ·¨´´½¨·¿ĞÍĞÅÏ¢ÎÄ¼ş!\n");
+		return;
+	}
+
+	HotelRoomInfo *current = hotel_room_head; // ±éÀúÁ´±í, ½«Ã¿¸ö½áµãÊı¾İÒÀ´Î´æÈëÎÄ¼ş
+	while (current != NULL)
+	{
+		fprintf(fp, "%s %.2lf %d %d\n", current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
+		current = current->next;
+	}
+
+	fclose(fp);
+	printf("³É¹¦±£´æ·¿ĞÍĞÅÏ¢µ½ÎÄ¼ş!\n");
+}
+
+// Õ¹Ê¾ËùÓĞ·¿ĞÍĞÅÏ¢
+void displayRoomTypes()
+{
+	HotelRoomInfo *current = hotel_room_head;
+
+	printf("ËùÓĞ·¿ĞÍĞÅÏ¢:\n");
+	while (current != NULL)
+	{
+		printf("·¿¼äÀàĞÍ: %s, ·¿¼ä¼Û¸ñ: %.2lf, ×Ü·¿¼äÊı: %d, Ê£Óà·¿¼äÊı: %d\n",
+			   current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
+		current = current->next;
+	}
+}
 
 /**
-* ??????Ğ·??? operations 
-*/ 
-HotelRoomInfo* hotel_room_head = NULL; // ??????????????????
+ * ¿Í»§¶©·¿
+ */
 
+void insertCustomerNode(Customer newCustomer)
+{
+	// ´´½¨ĞÂ½Úµã
+	Customer *newNode = (Customer *)malloc(sizeof(Customer));
+	*newNode = newCustomer;
+	newNode->next = NULL;
 
-// ????????????????? 
-void addRoomType(const char* roomType, double price, int totalRooms, int remaining_rooms) {
-    HotelRoomInfo* newRoom = (HotelRoomInfo*)malloc(sizeof(HotelRoomInfo));
-    
-    strcpy(newRoom->room_type, roomType);
-    newRoom->room_price = price;
-    newRoom->total_rooms = totalRooms; 
-    newRoom->remaining_rooms = remaining_rooms;
-    newRoom->next = NULL;
-
-    if (hotel_room_head == NULL) {
-        hotel_room_head = newRoom;
-    } else {
-    	// ??????????Î²?? ???????????????Î²?? 
-        HotelRoomInfo* current = hotel_room_head;
-        while (current->next != NULL) {
-            current = current->next;
-        }
-        current->next = newRoom;
-    }
-}
-// ??????? 
-void removeRoomType(const char* roomType) {
-    HotelRoomInfo* current = hotel_room_head;
-    HotelRoomInfo* prev = NULL; // prev??????????????? 
-
-    while (current != NULL) {
-        if (strcmp(current->room_type, roomType) == 0) { // ????????????????? 
-            if (prev == NULL) {  
-                hotel_room_head = current->next;
-            } else {
-                prev->next = current->next;
-            }
-            free(current); // ??????? 
-            return;
-        }
-        prev = current;
-        current = current->next;
-    }
-}
-// ???????????????? 
-void saveRoomInfoToFile() {
-    FILE* fp = fopen("room_info.txt", "w");
-    if (fp == NULL) {
-        printf("?????????????????!\n");
-        return;
-    }
-
-    HotelRoomInfo* current = hotel_room_head; // ????????, ???????????????Î´?????? 
-    while (current != NULL) {
-        fprintf(fp, "%s %.2lf %d %d\n", current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
-        current = current->next;
-    }
-
-    fclose(fp);
-    printf("??????æ·¿??????????!\n");
-}
-
-// ?????Ğ·?????? 
-void displayRoomTypes() {
-    HotelRoomInfo* current = hotel_room_head;
-
-    printf("???Ğ·??????:\n");
-    while (current != NULL) {
-        printf("????????: %s, ??????: %.2lf, ???????: %d, ???????: %d\n",
-               current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
-        current = current->next;
-    }
-}
-
-
-/** 
-* ???????
-*/ 
- 
-void insertCustomerNode(Customer newCustomer) {
-    // ????????
-    Customer* newNode = (Customer*)malloc(sizeof(Customer));
-    *newNode = newCustomer;
-    newNode->next = NULL;
-
-    // ????????????????????????
-    if (customer_head == NULL) {
-        customer_head = newNode;
-        return;
-    }
-
-    // ????????????????????????????????Î²
-    Customer* current = customer_head;
-    while (current->next != NULL) {
-        current = current->next;
-    }
-    current->next = newNode;
-}
-
-void saveCustomersToFile() {
-    FILE* fp = fopen("customers.txt", "w");
-    if (fp == NULL) {
-        printf("????????????????!\n");
-        return;
-    }
-
-    Customer* current = customer_head;
-    while (current != NULL) {
-        fprintf(fp, "%s %s %c %s %s", current->name, current->phone, current->gender, current->check_in_date, current->booking_time);
-
-        // ????????????????????????????æ´¢???????
-        CustomerRoomInfo* roomInfo = current->room_info;
-        while (roomInfo != NULL) {
-            fprintf(fp, " %s %.2lf", roomInfo->room_type, roomInfo->room_price);
-            roomInfo = roomInfo->next;
-        }
-
-        fprintf(fp, " %.2lf\n", current->total_price);
-
-        current = current->next;
-    }
-
-    fclose(fp);
-    printf("?????????????????!\n");
-}
-
-
-
-void loadRoomInfoFromFile() {
-	// ???????????????? 
-    FILE* fp = fopen("customers.txt", "r");
-	if (fp == NULL) {
-	    printf("Î´???????????????????????!\n");
-	    return;
+	// Èç¹ûÁ´±íÎª¿Õ£¬½«ĞÂ½Úµã×÷ÎªÍ·½Úµã
+	if (customer_head == NULL)
+	{
+		customer_head = newNode;
+		return;
 	}
-	
-	while (!feof(fp)) {
-	    Customer newCustomer;
-	
-	    // ?????????????
-	    int result = fscanf(fp, "%s %s %c %s %s",
-	                        newCustomer.name,
-	                        newCustomer.phone,
-	                        &newCustomer.gender,
-	                        newCustomer.check_in_date,
-	                        newCustomer.booking_time);
-	
-	    // ????????????????????
-	    newCustomer.room_info = NULL;
-	
-	    // ???????????????
-	    double total_price = 0.0;
-	    char roomType[50];
-	    double roomPrice;
-	
-	    // ???????????????????
-	    while (fscanf(fp, "%s %lf", roomType, &roomPrice) == 2) {
-	        total_price += roomPrice;
-	
-	        // ???????????????????????????????
-	        CustomerRoomInfo* newRoom = (CustomerRoomInfo*)malloc(sizeof(CustomerRoomInfo));
-	        strcpy(newRoom->room_type, roomType);
-	        newRoom->room_price = roomPrice;
-	        newRoom->next = NULL;
-	
-	        if (newCustomer.room_info == NULL) {
-	            newCustomer.room_info = newRoom;
-	        } else {
-	            CustomerRoomInfo* temp = newCustomer.room_info;
-	            while (temp->next != NULL) {
-	                temp = temp->next;
-	            }
-	            temp->next = newRoom;
-	        }
-	    }
-	
-	    newCustomer.total_price = total_price;
-	
-	    // ????????????????
-	    insertCustomerNode(newCustomer);
+
+	// ±éÀúÁ´±íÕÒµ½×îºóÒ»¸ö½Úµã£¬²¢½«ĞÂ½Úµã²åÈëÄ©Î²
+	Customer *current = customer_head;
+	while (current->next != NULL)
+	{
+		current = current->next;
 	}
-	
+	current->next = newNode;
+}
+
+void saveCustomersToFile() // ½«¿Í»§ĞÅÏ¢±£´æµ½ÎÄ¼ş
+{
+	FILE *fp = fopen("customers.txt", "w");
+	if (fp == NULL)
+	{
+		printf("ÎŞ·¨´´½¨¿Í»§ĞÅÏ¢ÎÄ¼ş!\n");
+		return;
+	}
+
+	Customer *current = customer_head;
+	while (current != NULL)
+	{
+		fprintf(fp, "%s %c %s %s %s %s %.2lf %d\n", current->name, current->gender, current->idcard, current->phone, current->check_in_date, current->booking_time, current->total_price, current->bookedRooms);
+
+		// ±éÀú¿Í»§ÒÑ¶¨·¿¼äµÄÁ´±í²¢½«Ïà¹ØĞÅÏ¢´æ´¢µ½ÎÄ¼şÖĞ
+		CustomerRoomInfo *roomInfo = current->room_info;
+		while (roomInfo != NULL)
+		{
+			fprintf(fp, "%s %s %.2lf\n", roomInfo->room_num, roomInfo->room_type, roomInfo->room_price);
+			roomInfo = roomInfo->next;
+		}
+		current = current->next;
+	}
+
+	fclose(fp);
+	printf("³É¹¦±£´æ¿Í»§ĞÅÏ¢µ½ÎÄ¼ş!\n");
+}
+
+// ´ÓÎÄ¼ş¼ÓÔØ·¿ĞÍĞÅÏ¢ºÍ¿Í»§¶©·¿¼ÇÂ¼
+void loadInfoFromFile()
+{
+	// ¼ÓÔØ¿Í»§¶©·¿¼ÇÂ¼ÎÄ¼ş
+	FILE *fp = fopen("customers.txt", "r");
+	if (fp == NULL)
+	{
+		printf("Î´ÕÒµ½¿Í»§ĞÅÏ¢ÎÄ¼ş£¬´´½¨ĞÂÎÄ¼ş!\n");
+		return;
+	}
+
+	while (!feof(fp))
+	{
+		Customer newCustomer;
+
+		// ¶ÁÈ¡»ù±¾¿Í»§ĞÅÏ¢
+		int result = fscanf(fp, "%s %c %s %s %s %s  %lf %d\n",
+							newCustomer.name,
+							&newCustomer.gender,
+							newCustomer.idcard,
+							newCustomer.phone,
+							newCustomer.check_in_date,
+							newCustomer.booking_time,
+							&newCustomer.total_price,
+							&newCustomer.bookedRooms);
+
+		// ³õÊ¼»¯¿Í»§ÒÑ¶¨·¿¼äÁ´±íÍ·
+		newCustomer.room_info = NULL;
+
+		// ¶ÁÈ¡·¿¼äĞÅÏ¢ºÍ×Ü¼Û
+		char roomType[50];
+		double roomPrice;
+		char roomNum[20];
+		// Ã¿´ÎÑ­»·¶ÁÈ¡Ò»¸ö·¿¼äĞÅÏ¢
+		for (int i = 1; i <= newCustomer.bookedRooms; i++)
+		{
+			result = fscanf(fp, "%s %s %lf\n", roomNum, roomType, &roomPrice);
+			// Ôö¼Ó·¿¼äĞÅÏ¢½Úµãµ½¿Í»§µÄÒÑ¶¨·¿¼äÁ´±íÖĞ
+			CustomerRoomInfo *newRoom = (CustomerRoomInfo *)malloc(sizeof(CustomerRoomInfo));
+			strcpy(newRoom->room_num, roomNum);
+			strcpy(newRoom->room_type, roomType);
+			newRoom->room_price = roomPrice;
+			newRoom->next = NULL;
+			if (newCustomer.room_info == NULL)
+			{
+				newCustomer.room_info = newRoom;
+			}
+			else
+			{
+				CustomerRoomInfo *temp = newCustomer.room_info;
+				while (temp->next != NULL)
+				{
+					temp = temp->next;
+				}
+				temp->next = newRoom;
+			}
+			// ´´½¨ĞÂ½Úµã²¢²åÈëÁ´±í
+		}
+		insertCustomerNode(newCustomer);
+	}
 	fclose(fp);
 
+	// ¼ÓÔØ¾ÆµêÏÖÓĞ·¿ĞÍ¼ÇÂ¼ÎÄ¼ş
+	fp = fopen("room_info.txt", "r");
+	if (fp == NULL)
+	{
+		printf("Î´ÕÒµ½·¿ĞÍĞÅÏ¢ÎÄ¼ş£¬´´½¨ĞÂÎÄ¼ş!\n");
+		return;
+	}
 
+	while (!feof(fp))
+	{
+		char roomType[50];
+		double price;
+		int totalRooms, remainingRooms;
 
-    
-    // ?????????Ğ·???????? 
-    fp = fopen("room_info.txt", "r");
-    if (fp == NULL) {
-        printf("Î´????????????????????????!\n");
-        return;
-    }
+		if (fscanf(fp, "%s %lf %d %d\n", roomType, &price, &totalRooms, &remainingRooms) == 4)
+		{
+			addRoomType(roomType, price, totalRooms, remainingRooms);
+		}
+	}
+	fclose(fp);
 
-    while (!feof(fp)) {
-        char roomType[50];
-        double price;
-        int totalRooms, remainingRooms;
-
-        if (fscanf(fp, "%s %lf %d %d\n", roomType, &price, &totalRooms, &remainingRooms) == 4) {
-            addRoomType(roomType, price, totalRooms, remainingRooms);
-        }
-    }
-
-    fclose(fp);
+	// ¼ÓÔØÓéÀÖÏîÄ¿¼ÇÂ¼ÎÄ¼ş
+	fp = fopen("entertainment_info.txt", "r");
+	if (fp == NULL)
+	{
+		printf("Î´ÕÒµ½ÓéÀÖÏîÄ¿¼ÇÂ¼ÎÄ¼ş£¬´´½¨ĞÂÎÄ¼ş!\n");
+		return;
+	}
+	while (!feof(fp))
+	{
+		Project *newNode = (Project *)malloc(sizeof(Project));
+		if (fscanf(fp, "%d %s %d", &newNode->id, newNode->name, &newNode->price) == 3)
+		{
+			insertNewEntertainment(newNode);
+		}
+	}
+	fclose(fp);
 }
 
-void displayCustomerInfo() {
-    Customer* current = customer_head;
+void displayCustomerInfo() // ÏÔÊ¾¿Í»§ĞÅÏ¢
+{
+	Customer *current = customer_head;
 
-    while (current != NULL) {
-        printf("???????: %s\n", current->name);
-        printf("????ç»°: %s\n", current->phone);
-        printf("??????: %c\n", current->gender);
-        printf("???????: %s\n", current->check_in_date);
-        printf("???????: %s\n", current->booking_time);
-		printf("????: %.2lf\n", current->total_price);
-        // ?????????????????????????????
-        CustomerRoomInfo* roomInfo = current->room_info;
-        printf("?????????????:\n");
-        while (roomInfo != NULL) {
-            printf("????????: %s, ??????: %.2lf\n", roomInfo->room_type, roomInfo->room_price);
-            roomInfo = roomInfo->next;
-        }
+	while (current != NULL)
+	{
 
-        printf("--------------------\n");
-        current = current->next;
-    }
+		printf("¿Í»§ĞÕÃû: %s\n", current->name);
+		printf("¿Í»§ĞÔ±ğ: %c\n", current->gender);
+		printf("¿Í»§Éí·İÖ¤ºÅ£º%s\n", current->idcard);
+		printf("¿Í»§µç»°: %s\n", current->phone);
+		printf("Èë×¡ÈÕÆÚ: %s\n", current->check_in_date);
+		printf("¶©·¿Ê±¼ä: %s\n", current->booking_time);
+		printf("×Ü½ğ¶î: %.2lf\n", current->total_price);
+		// ±éÀú¿Í»§ÒÑ¶¨·¿¼äµÄÁ´±í²¢ÏÔÊ¾·¿¼äĞÅÏ¢
+		CustomerRoomInfo *roomInfo = current->room_info;
+		printf("¿Í»§ÒÑ¶©·¿¼äĞÅÏ¢:\n");
+		while (roomInfo != NULL)
+		{
+			printf("·¿¼äºÅ£º%s, ·¿¼äÀàĞÍ: %s, ·¿¼ä¼Û¸ñ: %.2lf\n", roomInfo->room_num, roomInfo->room_type, roomInfo->room_price);
+			roomInfo = roomInfo->next;
+		}
+
+		printf("--------------------\n");
+		current = current->next;
+	}
 }
 
-
-void bookRoom() {
-	// ????????????Ğ·??? 
+void bookRoom() // ½øĞĞ¶©·¿²Ù×÷
+{
+	// ¶©·¿Ê±ÏÈÕ¹Ê¾ÏÖÓĞ·¿ĞÍ
 	displayRoomTypes();
-	 
-    Customer newCustomer;
-    newCustomer.room_info = NULL; // ????????????????
 
-    printf("??????????: ");
-    scanf("%s", newCustomer.name);
+	Customer newCustomer;
+	newCustomer.room_info = NULL; // ³õÊ¼»¯·¿¼äĞÅÏ¢Á´±í
 
-    printf("??????ç»°????: ");
-    scanf("%s", newCustomer.phone);
+	printf("ÇëÊäÈëĞÕÃû: ");
+	scanf("%s", newCustomer.name);
 
-    printf("?????????(M/F): ");
-    scanf(" %c", &newCustomer.gender);
+	printf("ÇëÊäÈëĞÔ±ğ(M/F): ");
+	scanf(" %c", &newCustomer.gender);
 
-    printf("?????????????: ");
-    scanf("%s", newCustomer.check_in_date);
-	
-//	 ???????????????? 
+	printf("ÇëÊäÈëÉí·İÖ¤ºÅ: ");
+	scanf(" %s", newCustomer.idcard);
+
+	printf("ÇëÊäÈëµç»°ºÅÂë: ");
+	scanf("%s", newCustomer.phone);
+
+	printf("ÇëÊäÈëÈë×¡ÈÕÆÚ: ");
+	scanf("%s", newCustomer.check_in_date);
+	newCustomer.bookedRooms = 0;
+
+	// ¶©·¿Ê±¼äÎªµ±Ç°ÏµÍ³Ê±¼ä
 	time_t rawtime;
 	struct tm *timeinfo;
-    time(&rawtime);
+	time(&rawtime);
 	timeinfo = localtime(&rawtime);
-	
-    char bookingTime[200];  // ???? booking_time ????? char ????
+
+	char bookingTime[200]; // ¼ÙÉè booking_time ÊÇÒ»¸ö char Êı×é
 	strftime(bookingTime, sizeof(bookingTime), "%Y-%m-%d-%H:%M:%S", timeinfo);
-	
+
 	sprintf(newCustomer.booking_time, "%s", bookingTime);
-	
 
-    // ?????????????????????????????????????????
-    int moreRooms = 1;
-    do {
-        CustomerRoomInfo* newRoomInfo = (CustomerRoomInfo*)malloc(sizeof(CustomerRoomInfo));
-        printf("????????????: ");
-        scanf("%s", newRoomInfo->room_type);
-        newRoomInfo->next = NULL;
+	// Á¬ĞøÊäÈë¶àÖÖ·¿¼äÀàĞÍĞÅÏ¢£¬Ö±µ½ÊäÈë½áÊø
+	int moreRooms = 1;
+	do
+	{
+		CustomerRoomInfo *newRoomInfo = (CustomerRoomInfo *)malloc(sizeof(CustomerRoomInfo));
+		printf("ÇëÊäÈë·¿¼äÀàĞÍ: ");
+		scanf("%s", newRoomInfo->room_type);
 
-        // ???????Ğ²????????????????????
-        HotelRoomInfo* currentRoom = hotel_room_head;
-        while (currentRoom != NULL) {
-            if (strcmp(currentRoom->room_type, newRoomInfo->room_type) == 0) {
-                // ?????????????????????????????
-                strcpy(newRoomInfo->room_type, currentRoom->room_type);
-                newRoomInfo->room_price = currentRoom->room_price;
-                
+		printf("ÇëÊäÈë·¿¼äºÅ: ");
+		scanf("%s", newRoomInfo->room_num);
+		newRoomInfo->next = NULL;
+
+		// ÔÚÁ´±íÖĞ²éÕÒ¶ÔÓ¦·¿¼äÀàĞÍµÄ·¿¼äĞÅÏ¢
+		HotelRoomInfo *currentRoom = hotel_room_head;
+		while (currentRoom != NULL)
+		{
+			if (strcmp(currentRoom->room_type, newRoomInfo->room_type) == 0)
+			{
+				// ÕÒµ½¶ÔÓ¦·¿¼äÀàĞÍ£¬¸üĞÂ¿Í»§µÄ·¿¼äĞÅÏ¢
+				strcpy(newRoomInfo->room_type, currentRoom->room_type);
+				newRoomInfo->room_price = currentRoom->room_price;
+
 				newCustomer.total_price += currentRoom->room_price;
 				currentRoom->remaining_rooms -= 1;
-                // ????????????????????????????
-                if (newCustomer.room_info == NULL) {
-                    newCustomer.room_info = newRoomInfo;
-                } else {
-                    CustomerRoomInfo* current = newCustomer.room_info;
-                    while (current->next != NULL) {
-                        current = current->next;
-                    }
-                    current->next = newRoomInfo;
-                }
-                break;
-            }
-            currentRoom = currentRoom->next;
-        }
+				// Ìí¼Ó·¿¼äĞÅÏ¢µ½¿Í»§µÄ·¿¼äĞÅÏ¢Á´±íÖĞ
+				if (newCustomer.room_info == NULL)
+				{
+					newCustomer.room_info = newRoomInfo;
+				}
+				else
+				{
+					CustomerRoomInfo *current = newCustomer.room_info;
+					while (current->next != NULL)
+					{
+						current = current->next;
+					}
+					current->next = newRoomInfo;
+				}
+				break;
+			}
+			currentRoom = currentRoom->next;
+		}
+		newCustomer.bookedRooms++;
+		printf("»¹ÓĞ¸ü¶à·¿¼äÒªÔ¤¶©Âğ£¿(1-ÊÇ£¬0-·ñ): ");
+		scanf("%d", &moreRooms);
+	} while (moreRooms);
 
-        printf("???Ğ¸???????????(1-???0-??): ");
-        scanf("%d", &moreRooms);
-    } while (moreRooms);
+	// ½«ĞÂµÄ¿Í»§ĞÅÏ¢Ìí¼Óµ½¿Í»§ĞÅÏ¢Á´±íÖĞ
+	insertCustomerNode(newCustomer);
 
-    // ??????????????????????????
-    insertCustomerNode(newCustomer);
-
-    // ?????????????æµ½???
-    saveCustomersToFile();
-    saveRoomInfoToFile();
-}
-// ??????????????????????????? 
-void sortCustomersByTotalPrice() {
-    if (customer_head == NULL || customer_head->next == NULL) {
-        return; // ?????????????????????????
-    }
-
-    int swapped;
-    Customer *temp = NULL;
-
-    do {
-        swapped = 0;
-        Customer *current = customer_head;
-        while (current->next != NULL) {
-            if (current->total_price > current->next->total_price) {
-                // ???????Î»??
-                if (current == customer_head) {
-                    customer_head = current->next;
-                } else {
-                    temp->next = current->next;
-                }
-
-                temp = current->next;
-                current->next = temp->next;
-                temp->next = current;
-                swapped = 1;
-            } else {
-                temp = current;
-                current = current->next;
-            }
-        }
-    } while (swapped);
+	// ½«ĞÂµÄ¿Í»§ĞÅÏ¢±£´æµ½ÎÄ¼ş
+	saveCustomersToFile();
+	saveRoomInfoToFile();
 }
 
-int main() {
-	
-    loadRoomInfoFromFile(); 
-    
-    int choice;
-    do {
-       	printf("\n?X?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?[\n");
-		printf("?U         ????????             ?U\n");
-		printf("?d?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?g\n");
-		printf("?U 1. ????                          ?U\n");
-		printf("?U 2. ?????Ğ·??????              ?U\n");
-		printf("?U 3. ?????????                  ?U\n");
-		printf("?U 4. ??????????                  ?U\n");
-		printf("?U 5. ????????????              ?U\n");
-		printf("?U 6. ?????????????              ?U\n");
-		printf("?U 7. ???                          ?U\n");
-		printf("?^?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?a\n");
-		printf("????????: ");
+// ÍË·¿£¨¸ù¾İÉí·İÖ¤ÍË·¿£©
+void checkOut(char *idCard)
+{
+	Customer *current = customer_head;
+	Customer *prev = NULL;
+	while (current != NULL)
+	{
+		// Èç¹ûÕÒµ½ÁË¶ÔÓ¦µÄ¿Í»§½áµã£¬½«Æä´ÓÁ´±íÖĞÉ¾³ı
+		if (strcmp(current->idcard, idCard) == 0)
+		{
+			// É¾³ı½áµãÎªÍ·½áµã
+			if (prev == NULL)
+			{
+				customer_head = current->next;
+			}
+			else
+			{
+				prev->next = current->next;
+			}
+			// ÊÍ·ÅÉ¾³ı½áµã
+			// 1.ÊÍ·Å¿Í»§¶©·¿Á´±í
+			CustomerRoomInfo *currentRoomInfo = current->room_info;
+			while (currentRoomInfo != NULL)
+			{
+				// ½«ÍË·¿µÄ·¿¼äÀàĞÍ + 1
+				HotelRoomInfo *currentRoom = hotel_room_head;
+				while (currentRoom != NULL)
+				{
+					if (strcmp(currentRoom->room_type, currentRoomInfo->room_type) == 0)
+					{
+						currentRoom->remaining_rooms += 1;
+						break;
+					}
+					currentRoom = currentRoom->next;
+				}
+				CustomerRoomInfo *tempCurrentRoomInfo = currentRoomInfo;
+				currentRoomInfo = currentRoomInfo->next;
+				free(tempCurrentRoomInfo);
+			}
+			// 2.ÊÍ·Å¿Í»§¶©·¿½áµã
+			free(current);
+			printf("¿Í»§ %s ÍË·¿³É¹¦\n", current->name);
+			saveCustomersToFile();
+			return;
+		}
+		else
+		{
+			prev = current;
+			current = current->next;
+		}
+	}
+	printf("Î´ÕÒµ½¸ÄÓÃ»§ĞÅÏ¢: %s", idCard);
+}
+
+// ¸ù¾İÓÃ»§¶©·¿×Ü½ğ¶î´ÓµÍµ½¸ß½øĞĞÅÅĞò
+void sortCustomersByTotalPrice()
+{
+	if (customer_head == NULL || customer_head->next == NULL)
+	{
+		return; // Á´±íÎª¿Õ»òÖ»ÓĞÒ»¸ö½Úµã£¬ÎŞĞèÅÅĞò
+	}
+
+	int swapped;
+	Customer *temp = NULL;
+
+	do
+	{
+		swapped = 0;
+		Customer *current = customer_head;
+		while (current->next != NULL)
+		{
+			if (current->total_price > current->next->total_price)
+			{
+				// ½»»»½ÚµãÎ»ÖÃ
+				if (current == customer_head)
+				{
+					customer_head = current->next;
+				}
+				else
+				{
+					temp->next = current->next;
+				}
+
+				temp = current->next;
+				current->next = temp->next;
+				temp->next = current;
+				swapped = 1;
+			}
+			else
+			{
+				temp = current;
+				current = current->next;
+			}
+		}
+	} while (swapped);
+}
+
+void Room_Menu() // ´òÓ¡¹¦ÄÜ²Ëµ¥
+{
+	printf("\n               ¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[\n");
+	printf("               ¨U         ¾Æµê¹ÜÀíÏµÍ³             ¨U\n");
+	printf("               ¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g\n");
+	printf("               ¨U 1. ¶©·¿                          ¨U\n");
+	printf("               ¨U 2. Õ¹Ê¾ËùÓĞ·¿ĞÍĞÅÏ¢              ¨U\n");
+	printf("               ¨U 3. Ìí¼Ó·¿ĞÍĞÅÏ¢                  ¨U\n");
+	printf("               ¨U 4. É¾³ı·¿ĞÍĞÅÏ¢                  ¨U\n");
+	printf("               ¨U 5. Õ¹Ê¾ÓÃ»§¶©·¿ĞÅÏ¢              ¨U\n");
+	printf("               ¨U 6. ÕûÀí¿Í»§¶©·¿¼ÇÂ¼              ¨U\n");
+	printf("               ¨U 7. ÍË·¿                        ¨U\n");
+	printf("               ¨U 8. ÓéÀÖÏîÄ¿                     ¨U\n");
+	printf("               ¨U 9.ĞŞ¸ÄµÇÂ¼ÃÜÂë                    ¨U\n");
+	printf("               ¨U 0. ÍË³ö                        ¨U\n");
+	printf("               ¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a\n");
+}
+
+int main()
+{
+	bool authenticated = false;
+	// Ñ­»·Ö±µ½ÑéÖ¤Í¨¹ı
+	do
+	{
+		authenticated = authenticate();
+	} while (!authenticated);
+	loadInfoFromFile();
+	int choice;
+	do
+	{
+		Room_Menu();
+		printf("ÇëÑ¡Ôñ²Ù×÷: ");
 		scanf("%d", &choice);
-        switch (choice) {
-            case 1:
-                bookRoom();
-                break;
-            case 2:
-                displayRoomTypes();
-                break;
-            case 3:
-                {
-                    char roomType[50];
-                    double price;
-                    int totalRooms;
+		switch (choice)
+		{
+		case 1:
+			bookRoom();
+			break;
+		case 2:
+			displayRoomTypes();
+			break;
+		case 3:
+		{
+			char roomType[50];
+			double price;
+			int totalRooms;
 
-                    printf("??????????????????: ");
-                    scanf("%s", roomType);
-                    printf("????????: ");
-                    scanf("%lf", &price);
-                    printf("?????????????: ");
-                    scanf("%d", &totalRooms);
+			printf("ÇëÊäÈëÒªÌí¼ÓµÄ·¿¼äÀàĞÍ: ");
+			scanf("%s", roomType);
+			printf("ÇëÊäÈë¼Û¸ñ: ");
+			scanf("%lf", &price);
+			printf("ÇëÊäÈë×Ü·¿¼äÊı: ");
+			scanf("%d", &totalRooms);
 
-                    addRoomType(roomType, price, totalRooms, totalRooms);
-                    saveRoomInfoToFile(); // ???æµ½???
-                }
-                break;
-            case 4:
-                {
-                    char roomTypeToRemove[50];
-                    printf("???????????????????: ");
-                    scanf("%s", roomTypeToRemove);
+			addRoomType(roomType, price, totalRooms, totalRooms);
+			// saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼ş
+		}
+		break;
+		case 4:
+		{
+			char roomTypeToRemove[50];
+			printf("ÇëÊäÈëÒªÉ¾³ıµÄ·¿¼äÀàĞÍ: ");
+			scanf("%s", roomTypeToRemove);
 
-                    removeRoomType(roomTypeToRemove);
-                    saveRoomInfoToFile(); // ???æµ½???
-                }
-                break;
-            case 5: 
-            	displayCustomerInfo();
-				break; 
-            case 6:
-            	sortCustomersByTotalPrice();
-            	displayCustomerInfo();
-            	break;
-			case 7:
-                saveRoomInfoToFile(); // ???æµ½???
-                exit(0);
-            default:
-                printf("??Ğ§?????!\n");
-        }
-    } while (choice != 7);
-
-    return 0;
+			removeRoomType(roomTypeToRemove);
+			saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼ş
+		}
+		break;
+		case 5:
+			displayCustomerInfo();
+			break;
+		case 6:
+			sortCustomersByTotalPrice();
+			displayCustomerInfo();
+			break;
+		case 7:
+			char idCard[20];
+			printf("ÇëÊäÈëÒªÍË·¿µÄ¿Í»§Éí·İÖ¤£º");
+			scanf("%s", idCard);
+			checkOut(idCard);
+			break;
+		case 8:
+			entertainment();
+			break;
+		case 9:
+			changethepassword();
+			break;
+		case 0:
+			saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼ş
+			exit(0);
+		default:
+			printf("ÎŞĞ§µÄÑ¡Ôñ!\n");
+		}
+	} while (choice != 0);
+	system("pause");
+	return 0;
 }
 
+void entertainment()
+{
+	char choice;
+	while (1) // ¹¦ÄÜÑ¡Ôñ
+	{
+		Function_Menu();
+		choice = getch();
+		switch (choice)
+		{
+		case '1':
+			int price;
+			char name[30];
+			int id;
+			printf("ÇëÊäÈëÏîÄ¿ĞòºÅ¡¢Ãû³ÆºÍ¼Û¸ñ£º \n");
+			scanf("%d%s%d", &id, name, &price);
+			Create(id, name, price);
+			saveEntertainmentToFile();
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '2':
+			int id;
+			printf("ÇëÊäÈëÒªÉ¾³ıµÄÏîÄ¿ĞòºÅ:");
+			scanf("%d", &id);
+			Delete(id);
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '3':
+			printf("ÇëÊäÈëĞèÒªĞŞ¸ÄµÄÏîÄ¿ĞòºÅ£º");
+			int id, choice;
+			scanf("%d", &id);
+			printf("ÇëÑ¡ÔñĞŞ¸Ä¶ÔÏó£º\n1£ºÃû³Æ\n2£º¼Û¸ñ\n");
+			choice = getch();
+			Change(id, choice);
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '4':
+			char c;
+			Sort_choose();
+			c = getch();
+			switch (c)
+			{
+			case '1':
+				Name_sort();
+				break;
+			case '2':
+				Charge_sort();
+				break;
+			default:
+				break;
+			}
+			printf("ÅÅĞò³É¹¦£¡\nÇë´ò¿ª²Ëµ¥²é¿´¡£");
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '5':
+			int id, roomNumber, price;
+			char g[30], h[30];
+			Menu();
+			printf("ÇëÊäÈëĞòºÅ¡¢·¿¼äºÅ¡¢ÏîÄ¿Ãû³Æ¡¢Ô¤Ô¼ÈÕÆÚºÍ¼Û¸ñ\n");
+			scanf("%d%d%s%s%d", &id, &roomNumber, g, h, &price);
+			if (id > 0)
+				newOrder(id, roomNumber, g, h, price);
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '6':
+			int roomNumber;
+			Order_choose();
+			char choice = getch();
+			switch (choice)
+			{
+			case '1':
+				printf("ÇëÊäÈëÒª²éÕÒµÄ·¿¼äºÅ");
+				scanf("%d", &roomNumber);
+				Search_sort(roomNumber);
+				break;
+			case '2':
+				output();
+				break;
+			default:
+				break;
+			}
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '7':
+			system("cls");
+			Menu();
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
 
+		case '8':
+			system("cls");
+			int id;
+			output();
+			printf("ÇëÊäÈëÒªÉ¾³ıµÄ¶©µ¥ĞòºÅ:");
+			scanf("%d", &id);
+			Order_delete(id);
+			printf("\n°´ÈÎºÎ¼üÁ½´Î·µ»ØÖ÷²Ëµ¥\n");
+			getch();
+			getch();
+			break;
+		case '0':
+			system("cls");
+			return; // Ö±½ÓÍË³öº¯Êı
+		}
+	}
+}
 
+void saveEntertainmentToFile()
+{
+	FILE *fp = fopen("entertainment_info.txt", "w");
+	if (fp == NULL)
+	{
+		printf("ÎŞ·¨´´½¨ entertainment_info.txt ÎÄ¼ş");
+		return;
+	}
+	Project *current = entertainment_head;
+	while (current != NULL)
+	{
+		fprintf(fp, "%d %s %d\n", current->id, current->name, current->price);
+		current = current->next;
+	}
+	fclose(fp);
+	printf("³É¹¦±£´æÓéÀÖÏîÄ¿ĞÅÏ¢µ½ÎÄ¼ş£¡\n");
+}
+void insertNewEntertainment(Project *newEntertainment)
+{
+	Project *current = entertainment_head;
+	if (entertainment_head == NULL)
+	{
+		entertainment_head = newEntertainment;
+		return;
+	}
+	while (current->next != NULL)
+		current = current->next;
+	current->next = newEntertainment;
+}
+void Create(int num, char *a, int pr)
+{
+	Project *p = entertainment_head;
+	Project *newNode = (Project *)malloc(sizeof(Project));
+	strcpy(newNode->name, a);
+	newNode->price = pr;
+	newNode->id = num;
+	newNode->next = NULL;
+	insertNewEntertainment(newNode);
+	printf("Ìí¼Ó³É¹¦£¡ÊÇ·ñÒª¼ÌĞøÌí¼Ó(y/n)\n");
+	char v = getch();
+	while (v == 'y')
+	{
+		printf("\nÇëÊäÈëÏîÄ¿ĞòºÅ¡¢Ãû³ÆºÍ¼Û¸ñ£º \n");
+		scanf("%d%s%d", &num, a, &pr);
+		Create(num, a, pr);
+		break;
+	}
+}
 
+void insertNewOrderNode(Order *newOrderNode)
+{
+	Order *current = order_head;
+	if (order_head == NULL)
+	{
+		order_head = newOrderNode;
+		return;
+	}
+	while (current->next != NULL)
+		current = current->next;
+	current->next = newOrderNode;
+}
+void newOrder(int id, int roomNumber, char *kind, char *date, int price)
+{
+	Order *newNode = (Order *)malloc(sizeof(Order));
+	Order *current = order_head;
+	newNode->id = id;
+	newNode->roomNumber = roomNumber;
+	strcpy(newNode->kind, kind);
+	strcpy(newNode->date, date);
+	newNode->price = price;
+	sum += price;
+	newNode->next = NULL;
+	insertNewOrderNode(newNode);
+	nplus++;
+	printf("ÒÑÑ¡Ôñ%d¸öÏîÄ¿£¬Ò»¹²%dÔª\n", nplus, sum);
+	printf("ÊÇ·ñÒª¼ÌĞøÌí¼Ó(y/n)\n");
+	char v = getch();
+	while (v == 'y')
+	{
+		printf("ÇëÊäÈëĞòºÅ¡¢·¿¼äºÅ¡¢ÏîÄ¿Ãû³Æ¡¢Ô¤Ô¼ÈÕÆÚºÍ¼Û¸ñ\n");
+		scanf("%d%d%s%s%d", &id, &roomNumber, kind, date, &price);
+		if (id > 0)
+		{
+			newOrder(id, roomNumber, kind, date, price);
+		}
+		break;
+	}
+	nplus = 0;
+	sum = 0;
+}
+
+void Function_Menu() // ´òÓ¡¹¦ÄÜ²Ëµ¥
+{
+	printf("\n\n\n\n");
+	printf("\t\t\t\t                 ¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r                 \n");
+	printf("\t\t\t\t¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g¾ÆµêÓéÀÖÏîÄ¿¹ÜÀíÏµÍ³¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r\n");
+	printf("\t\t\t\t¨U                ¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s             ¨U\n");
+	printf("\t\t\t\t¨U     ¡¾1¡¿Ìí¼ÓÏîÄ¿             ¡¾2¡¿É¾³ıÏîÄ¿       ¨U\n");
+	printf("\t\t\t\t¨U                                                   ¨U\n");
+	printf("\t\t\t\t¨U     ¡¾3¡¿ĞŞ¸ÄÏîÄ¿             ¡¾4¡¿ÏîÄ¿ÅÅĞò       ¨U\n");
+	printf("\t\t\t\t¨U                                                   ¨U\n");
+	printf("\t\t\t\t¨U     ¡¾5¡¿¹Ë¿ÍÑ¡ÔñÏîÄ¿         ¡¾6¡¿ÅÅĞò²é¿´¶©µ¥   ¨U\n");
+	printf("\t\t\t\t¨U                                                   ¨U\n");
+	printf("\t\t\t\t¨U     ¡¾7¡¿Õ¹Ê¾²Ëµ¥             ¡¾8¡¿É¾³ı¶©µ¥       ¨U\n");
+	printf("\t\t\t\t¨U                                                   ¨U\n");
+	printf("\t\t\t\t¨U                   ¡¾0¡¿ÍË³öÏµÍ³                   ¨U\n");
+	printf("\t\t\t\t¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s\n");
+	printf("\t\t\t\t\t¡òÇëÊäÈë¹¦ÄÜÇ°µÄĞòºÅÖ´ĞĞÏàÓ¦µÄ¹¦ÄÜ:\n");
+}
+
+void Delete(int id)
+{
+	Project *prev = NULL;
+	Project *current = entertainment_head;
+	while (current != NULL)
+	{
+		if (current->id == id)
+		{
+			if (prev == NULL)
+			{
+				entertainment_head = current->next;
+				free(current);
+			}
+			else
+			{
+				prev->next = current->next;
+				free(current);
+			}
+			return;
+		}
+		prev = current;
+		current = current->next;
+	}
+}
+
+void Change(int id, int choice)
+{
+	Project *current = entertainment_head;
+	if (current == NULL)
+	{
+		printf("ÏµÍ³ÖĞÔİÎŞÏîÄ¿ĞÅÏ¢£¡\n\n");
+		return;
+	}
+	while (current != NULL)
+	{
+		if (id == current->id)
+		{
+			if (choice == 1)
+			{
+				printf("ÇëÊäÈëĞŞ¸ÄºóµÄÃû³Æ£º\n");
+				scanf("%s", current->name);
+			}
+			else
+			{
+				printf("ÇëÊäÈëĞŞ¸ÄºóµÄ¼Û¸ñ£º\n");
+				scanf("%d", &current->price);
+			}
+			return;
+		}
+		current = current->next;
+	}
+	printf("ÏîÄ¿ĞÅÏ¢ĞŞ¸Ä³É¹¦£¡\n");
+}
+
+void Menu() // ´òÓ¡²Ëµ¥
+{
+	system("cls");
+	Project *current = entertainment_head;
+	int count = 0;
+	if (entertainment_head == NULL)
+	{
+		printf("ÏµÍ³ÖĞÔİÎŞÏîÄ¿ĞÅÏ¢£¬ÇëÂ¼ÈëºóÔÙ²é¿´¡£\n\n");
+		return;
+	}
+	printf("\t\t\t\t*********************************************************\n");
+	printf("\t\t\t\t*\t\t\t»¶Ó­¹âÁÙ±¾¾Æµê  \t\t\t*\n");
+	printf("\t\t\t\t*********************************************************\n");
+	printf("\t\t\t\t*ĞòºÅ                 Ãû³Æ                    ¼Û¸ñ      *\n");
+	printf("\t\t\t\t*********************************************************\n");
+	while (current != NULL)
+	{
+		printf("\t\t\t\t*% -3d                %-10s               £¤%-6d    *\n", current->id, current->name, current->price);
+		printf("\t\t\t\t*********************************************************\n");
+		printf("\t\t\t\t*********************************************************\n");
+		current = current->next;
+		count++;
+	}
+	printf("\n\t\t\t\t\t\t  Ò»¹²ÓĞ%d¸öÏîÄ¿", count);
+}
+
+void Sort_choose() // ÅÅĞò·½Ê½Ñ¡Ôñ
+{
+	system("cls");
+	Project *current = entertainment_head;
+	if (current == NULL)
+	{
+		printf("ÏµÍ³ÖĞÔİÎŞÏîÄ¿ĞÅÏ¢£¡\n\n");
+		return;
+	}
+	printf("\n\n\n\n");
+	printf("\t\t\t\t                 ¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r                 \n");
+	printf("\t\t\t\t¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g    ÅÅĞò·½Ê½    ¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r\n");
+	printf("\t\t\t\t¨U                ¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s                ¨U\n");
+	printf("\t\t\t\t¨U     ¡¾1¡¿°´Ãû³ÆÅÅĞò           ¡¾2¡¿°´¼Û¸ñ½µĞò    ¨U\n");
+	printf("\t\t\t\t¨U                                                  ¨U\n");
+	printf("\t\t\t\t¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s\n");
+	printf("\t\t\t\t\t¡òÇëÊäÈëĞòºÅÑ¡ÔñÏàÓ¦µÄÅÅĞò·½Ê½:");
+}
+
+void Name_sort() // °´ĞòºÅÅÅĞò
+{
+	system("cls");
+	Project *current = entertainment_head;
+	int n = 0;
+	while (current != NULL)
+	{
+		current = current->next;
+		n++;
+	}
+	for (int i = 1; i < n; i++)
+	{
+		current = entertainment_head;
+		for (int j = 0; j < n - i; j++)
+		{
+			if (strcmp(current->name, current->next->name) > 0)
+			{
+				int id = current->id;
+				current->id = current->next->id;
+				current->next->id = id;
+				char name[50];
+				strcpy(name, current->name);
+				strcpy(current->name, current->next->name);
+				strcpy(current->next->name, name);
+				int price = current->price;
+				current->price = current->next->price;
+				current->next->price = price;
+			}
+			current = current->next;
+		}
+	}
+}
+
+void Charge_sort() // °´¼Û¸ñÅÅĞò
+{
+	system("cls");
+	Project *current = entertainment_head;
+	int n = 0;
+	while (current != NULL)
+	{
+		current = current->next;
+		n++;
+	}
+	for (int i = 1; i < n; i++)
+	{
+		current = entertainment_head;
+		for (int j = 0; j < n - i; j++)
+		{
+			if (current->price < current->next->price)
+			{
+				int id = current->id;
+				current->id = current->next->id;
+				current->next->id = id;
+				char name[50];
+				strcpy(name, current->name);
+				strcpy(current->name, current->next->name);
+				strcpy(current->next->name, name);
+				int price = current->price;
+				current->price = current->next->price;
+				current->next->price = price;
+			}
+			current = current->next;
+		}
+	}
+}
+
+void Order_choose() // ÅÅĞò·½Ê½Ñ¡Ôñ
+{
+	system("cls");
+	Order *current = order_head;
+	if (order_head == NULL)
+	{
+		printf("ÏµÍ³ÖĞÔİÎŞÏîÄ¿ĞÅÏ¢£¡\n\n");
+		return;
+	}
+
+	printf("\n\n\n\n");
+	printf("\t\t\t\t                 ¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r                 \n");
+	printf("\t\t\t\t¨q¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g    ÅÅĞò·½Ê½    ¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨r\n");
+	printf("\t\t\t\t¨U                ¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s                ¨U\n");
+	printf("\t\t\t\t¨U         ¡¾1¡¿²é¿´¾ßÌå·¿¼äÔ¤Ô¼ÏîÄ¿                ¨U\n");
+	printf("\t\t\t\t¨U                                                  ¨U\n");
+	printf("\t\t\t\t¨U         ¡¾2¡¿²é¿´ËùÓĞÔ¤Ô¼ÏîÄ¿¶©µ¥ĞÅÏ¢            ¨U\n");
+	printf("\t\t\t\t¨U                                                  ¨U\n");
+	printf("\t\t\t\t¨t¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨s\n");
+	printf("\t\t\t\t\t¡òÇëÊäÈëĞòºÅÑ¡ÔñÏàÓ¦µÄÅÅĞò·½Ê½:\n");
+}
+
+void Search_sort(int roomNumber)
+{
+	system("cls");
+	Order *current = order_head;
+	while (current != NULL)
+	{
+		if (current->roomNumber == roomNumber)
+		{
+			printf("\t\t\t\t*********************************************************\n");
+			printf("\t\t\t\t*\t\t  »¶Ó­¹âÁÙ±¾¾Æµê  \t\t\t*\n");
+			printf("\t\t\t\t*********************************************************\n");
+			printf("\t\t\t\t*ĞòºÅ     ·¿¼äºÅ        Ãû³Æ           ÈÕÆÚ      ¼Û¸ñ   *\n");
+			printf("\t\t\t\t*********************************************************\n");
+			printf("\t\t\t\t*%-3d       %-5d        %-10s     %-5s   £¤%-6d  *\n", current->id, current->roomNumber, current->kind, current->date, current->price);
+			printf("\t\t\t\t*********************************************************\n");
+			return;
+		}
+	}
+	printf("¸Ã·¿¼ä¹Ë¿ÍÔİÎ´Ô¤Ô¼ÏîÄ¿£¡\n");
+}
+
+void Order_delete(int id)
+{
+	system("cls");
+	Order *prev = NULL;
+	Order *current = order_head;
+	while (current != NULL)
+	{
+		if (current->id = id)
+		{
+			if (prev == NULL)
+			{
+				order_head = NULL;
+			}
+			else
+			{
+				prev->next = current->next;
+			}
+			free(current);
+			return;
+		}
+		current = current->next;
+	}
+	printf("É¾³ı³É¹¦£¡");
+}
+
+void output() // ´òÓ¡¶©µ¥
+{
+	Order *current = order_head;
+	if (order_head == NULL)
+	{
+		printf("ÏµÍ³ÖĞÔİÎŞÏîÄ¿ĞÅÏ¢£¬ÇëÂ¼ÈëºóÔÙ²é¿´¡£\n\n");
+		return;
+	}
+	int count = 0;
+	printf("\t\t\t\t*********************************************************\n");
+	printf("\t\t\t\t*\t\t  »¶Ó­¹âÁÙ±¾¾Æµê  \t\t\t*\n");
+	printf("\t\t\t\t*********************************************************\n");
+	printf("\t\t\t\t*ĞòºÅ     ·¿¼äºÅ        Ãû³Æ           ÈÕÆÚ      ¼Û¸ñ   *\n");
+	printf("\t\t\t\t*********************************************************\n");
+	while (current != NULL)
+	{
+		printf("\t\t\t\t*%-3d       %-5d        %-10s     %-5s   £¤%-6d  *\n", current->id, current->roomNumber, current->kind, current->date, current->price);
+		printf("\t\t\t\t*********************************************************\n");
+		current = current->next;
+		count++;
+	}
+	printf("\n\t\t\t\t\t\t  Ò»¹²ÓĞ%dÌõ¶©µ¥", count);
+}
