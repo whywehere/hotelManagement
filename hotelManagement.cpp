@@ -2,43 +2,43 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
- // ¶¨Òå¾ÆµêÏÖÓÐ·¿¼äÐÅÏ¢½á¹¹Ìå
+ // ?????????Ð·??????????
 typedef struct HotelRoomInfo {
-    char room_type[50];       // ·¿¼äÀàÐÍ
-    double room_price;        // ·¿¼ä¼Û¸ñ
-    int total_rooms;          // ×Ü·¿¼äÊý
-    int remaining_rooms;      // Ê£Óà·¿¼äÊý
-    struct HotelRoomInfo* next;   // Ö¸ÏòÏÂÒ»¸ö·¿¼äÐÅÏ¢½ÚµãµÄÖ¸Õë
+    char room_type[50];       // ????????
+    double room_price;        // ??????
+    int total_rooms;          // ???????
+    int remaining_rooms;      // ???????
+    struct HotelRoomInfo* next;   // ??????????????????????
 } HotelRoomInfo;
 
-// ¶¨Òå¿Í»§ÒÑ¶©·¿¼äÐÅÏ¢½á¹¹Ìå
+// ????????????????????
 typedef struct CustomerRoomInfo {
-    char room_type[50];       // ·¿¼äÀàÐÍ
-    double room_price;        // ·¿¼ä¼Û¸ñ
-    struct CustomerRoomInfo* next;   // Ö¸ÏòÏÂÒ»¸ö¿Í»§·¿¼äÐÅÏ¢½ÚµãµÄÖ¸Õë
+    char room_type[50];       // ????????
+    double room_price;        // ??????
+    struct CustomerRoomInfo* next;   // ?????????????????????????
 } CustomerRoomInfo;
 
-// ¶¨Òå¿Í»§ÐÅÏ¢½á¹¹Ìå
+// ?????????????
 typedef struct Customer {
-    char name[100];           // ¿Í»§ÐÕÃû
-    char phone[20];           // ¿Í»§µç»°
-    char gender;              // ¿Í»§ÐÔ±ð
-    char check_in_date[20];   // ¿Í»§Èë×¡ÈÕÆÚ
-    CustomerRoomInfo* room_info; // Ö¸Ïò¿Í»§ÒÑ¶¨·¿¼äÐÅÏ¢µÄÖ¸Õë
-    char booking_time[80];    // ¶©·¿Ê±¼ä
-    double total_price;       // ¶©·¿×Ü¼Û
-    struct Customer* next;    // Ö¸ÏòÏÂÒ»¸ö¿Í»§ÐÅÏ¢½ÚµãµÄÖ¸Õë
+    char name[100];           // ???????
+    char phone[20];           // ????ç»°
+    char gender;              // ??????
+    char check_in_date[20];   // ??????????
+    CustomerRoomInfo* room_info; // ????????????????????
+    char booking_time[80];    // ???????
+    double total_price;       // ???????
+    struct Customer* next;    // ?????????????????????
 } Customer;
 
-Customer* customer_head = NULL;  // Ö¸Ïò¿Í»§ÐÅÏ¢Á´±íÍ·½Úµã
+Customer* customer_head = NULL;  // ????????????????
 
 /**
-* ¾ÆµêÏÖÓÐ·¿¼ä operations 
+* ??????Ð·??? operations 
 */ 
-HotelRoomInfo* hotel_room_head = NULL; // Ö¸Ïò¾Æµê·¿¼äÐÅÏ¢Á´±íÍ·½Úµã
+HotelRoomInfo* hotel_room_head = NULL; // ??????????????????
 
 
-// Ìí¼Ó·¿ÐÍÐÅÏ¢µ½Á´±íÖÐ 
+// ????????????????? 
 void addRoomType(const char* roomType, double price, int totalRooms, int remaining_rooms) {
     HotelRoomInfo* newRoom = (HotelRoomInfo*)malloc(sizeof(HotelRoomInfo));
     
@@ -51,7 +51,7 @@ void addRoomType(const char* roomType, double price, int totalRooms, int remaini
     if (hotel_room_head == NULL) {
         hotel_room_head = newRoom;
     } else {
-    	// ±éÀúµ½Á´±íÎ²²¿ ½«ÐÂÊý¾Ý²åÈëµ½Á´±íÎ²²¿ 
+    	// ??????????Î²?? ???????????????Î²?? 
         HotelRoomInfo* current = hotel_room_head;
         while (current->next != NULL) {
             current = current->next;
@@ -59,50 +59,50 @@ void addRoomType(const char* roomType, double price, int totalRooms, int remaini
         current->next = newRoom;
     }
 }
-// É¾³ý·¿ÐÍ 
+// ??????? 
 void removeRoomType(const char* roomType) {
     HotelRoomInfo* current = hotel_room_head;
-    HotelRoomInfo* prev = NULL; // prevÎªÖ¸ÏòÇ°Ò»¸ö½áµãµÄÖ¸Õë 
+    HotelRoomInfo* prev = NULL; // prev??????????????? 
 
     while (current != NULL) {
-        if (strcmp(current->room_type, roomType) == 0) { // Èç¹ûÎªÒªÉ¾³ýµÄ·¿¼äÀàÐÍ 
+        if (strcmp(current->room_type, roomType) == 0) { // ????????????????? 
             if (prev == NULL) {  
                 hotel_room_head = current->next;
             } else {
                 prev->next = current->next;
             }
-            free(current); // É¾³ý¸Ã½áµã 
+            free(current); // ??????? 
             return;
         }
         prev = current;
         current = current->next;
     }
 }
-// ½«·¿ÐÍÐÅÏ¢´æÈëÎÄ¼þ 
+// ???????????????? 
 void saveRoomInfoToFile() {
     FILE* fp = fopen("room_info.txt", "w");
     if (fp == NULL) {
-        printf("ÎÞ·¨´´½¨·¿ÐÍÐÅÏ¢ÎÄ¼þ!\n");
+        printf("?????????????????!\n");
         return;
     }
 
-    HotelRoomInfo* current = hotel_room_head; // ±éÀúÁ´±í, ½«Ã¿¸ö½áµãÊý¾ÝÒÀ´Î´æÈëÎÄ¼þ 
+    HotelRoomInfo* current = hotel_room_head; // ????????, ???????????????Î´?????? 
     while (current != NULL) {
         fprintf(fp, "%s %.2lf %d %d\n", current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
         current = current->next;
     }
 
     fclose(fp);
-    printf("³É¹¦±£´æ·¿ÐÍÐÅÏ¢µ½ÎÄ¼þ!\n");
+    printf("??????æ·¿??????????!\n");
 }
 
-// Õ¹Ê¾ËùÓÐ·¿ÐÍÐÅÏ¢ 
+// ?????Ð·?????? 
 void displayRoomTypes() {
     HotelRoomInfo* current = hotel_room_head;
 
-    printf("ËùÓÐ·¿ÐÍÐÅÏ¢:\n");
+    printf("???Ð·??????:\n");
     while (current != NULL) {
-        printf("·¿¼äÀàÐÍ: %s, ·¿¼ä¼Û¸ñ: %.2lf, ×Ü·¿¼äÊý: %d, Ê£Óà·¿¼äÊý: %d\n",
+        printf("????????: %s, ??????: %.2lf, ???????: %d, ???????: %d\n",
                current->room_type, current->room_price, current->total_rooms, current->remaining_rooms);
         current = current->next;
     }
@@ -110,22 +110,22 @@ void displayRoomTypes() {
 
 
 /** 
-* ¿Í»§¶©·¿
+* ???????
 */ 
  
 void insertCustomerNode(Customer newCustomer) {
-    // ´´½¨ÐÂ½Úµã
+    // ????????
     Customer* newNode = (Customer*)malloc(sizeof(Customer));
     *newNode = newCustomer;
     newNode->next = NULL;
 
-    // Èç¹ûÁ´±íÎª¿Õ£¬½«ÐÂ½Úµã×÷ÎªÍ·½Úµã
+    // ????????????????????????
     if (customer_head == NULL) {
         customer_head = newNode;
         return;
     }
 
-    // ±éÀúÁ´±íÕÒµ½×îºóÒ»¸ö½Úµã£¬²¢½«ÐÂ½Úµã²åÈëÄ©Î²
+    // ????????????????????????????????Î²
     Customer* current = customer_head;
     while (current->next != NULL) {
         current = current->next;
@@ -136,7 +136,7 @@ void insertCustomerNode(Customer newCustomer) {
 void saveCustomersToFile() {
     FILE* fp = fopen("customers.txt", "w");
     if (fp == NULL) {
-        printf("ÎÞ·¨´´½¨¿Í»§ÐÅÏ¢ÎÄ¼þ!\n");
+        printf("????????????????!\n");
         return;
     }
 
@@ -144,7 +144,7 @@ void saveCustomersToFile() {
     while (current != NULL) {
         fprintf(fp, "%s %s %c %s %s", current->name, current->phone, current->gender, current->check_in_date, current->booking_time);
 
-        // ±éÀú¿Í»§ÒÑ¶¨·¿¼äµÄÁ´±í²¢½«Ïà¹ØÐÅÏ¢´æ´¢µ½ÎÄ¼þÖÐ
+        // ????????????????????????????æ´¢???????
         CustomerRoomInfo* roomInfo = current->room_info;
         while (roomInfo != NULL) {
             fprintf(fp, " %s %.2lf", roomInfo->room_type, roomInfo->room_price);
@@ -157,23 +157,23 @@ void saveCustomersToFile() {
     }
 
     fclose(fp);
-    printf("³É¹¦±£´æ¿Í»§ÐÅÏ¢µ½ÎÄ¼þ!\n");
+    printf("?????????????????!\n");
 }
 
 
 
 void loadRoomInfoFromFile() {
-	// ¼ÓÔØ¿Í»§¶©·¿¼ÇÂ¼ÎÄ¼þ 
+	// ???????????????? 
     FILE* fp = fopen("customers.txt", "r");
 	if (fp == NULL) {
-	    printf("Î´ÕÒµ½¿Í»§ÐÅÏ¢ÎÄ¼þ£¬´´½¨ÐÂÎÄ¼þ!\n");
+	    printf("Î´???????????????????????!\n");
 	    return;
 	}
 	
 	while (!feof(fp)) {
 	    Customer newCustomer;
 	
-	    // ¶ÁÈ¡»ù±¾¿Í»§ÐÅÏ¢
+	    // ?????????????
 	    int result = fscanf(fp, "%s %s %c %s %s",
 	                        newCustomer.name,
 	                        newCustomer.phone,
@@ -181,19 +181,19 @@ void loadRoomInfoFromFile() {
 	                        newCustomer.check_in_date,
 	                        newCustomer.booking_time);
 	
-	    // ³õÊ¼»¯¿Í»§ÒÑ¶¨·¿¼äÁ´±íÍ·
+	    // ????????????????????
 	    newCustomer.room_info = NULL;
 	
-	    // ¶ÁÈ¡·¿¼äÐÅÏ¢ºÍ×Ü¼Û
+	    // ???????????????
 	    double total_price = 0.0;
 	    char roomType[50];
 	    double roomPrice;
 	
-	    // Ã¿´ÎÑ­»·¶ÁÈ¡Ò»¸ö·¿¼äÐÅÏ¢
+	    // ???????????????????
 	    while (fscanf(fp, "%s %lf", roomType, &roomPrice) == 2) {
 	        total_price += roomPrice;
 	
-	        // Ôö¼Ó·¿¼äÐÅÏ¢½Úµãµ½¿Í»§µÄÒÑ¶¨·¿¼äÁ´±íÖÐ
+	        // ???????????????????????????????
 	        CustomerRoomInfo* newRoom = (CustomerRoomInfo*)malloc(sizeof(CustomerRoomInfo));
 	        strcpy(newRoom->room_type, roomType);
 	        newRoom->room_price = roomPrice;
@@ -212,7 +212,7 @@ void loadRoomInfoFromFile() {
 	
 	    newCustomer.total_price = total_price;
 	
-	    // ´´½¨ÐÂ½Úµã²¢²åÈëÁ´±í
+	    // ????????????????
 	    insertCustomerNode(newCustomer);
 	}
 	
@@ -221,10 +221,10 @@ void loadRoomInfoFromFile() {
 
 
     
-    // ¼ÓÔØ¾ÆµêÏÖÓÐ·¿ÐÍ¼ÇÂ¼ÎÄ¼þ 
+    // ?????????Ð·???????? 
     fp = fopen("room_info.txt", "r");
     if (fp == NULL) {
-        printf("Î´ÕÒµ½·¿ÐÍÐÅÏ¢ÎÄ¼þ£¬´´½¨ÐÂÎÄ¼þ!\n");
+        printf("Î´????????????????????????!\n");
         return;
     }
 
@@ -245,17 +245,17 @@ void displayCustomerInfo() {
     Customer* current = customer_head;
 
     while (current != NULL) {
-        printf("¿Í»§ÐÕÃû: %s\n", current->name);
-        printf("¿Í»§µç»°: %s\n", current->phone);
-        printf("¿Í»§ÐÔ±ð: %c\n", current->gender);
-        printf("Èë×¡ÈÕÆÚ: %s\n", current->check_in_date);
-        printf("¶©·¿Ê±¼ä: %s\n", current->booking_time);
-		printf("×Ü½ð¶î: %.2lf\n", current->total_price);
-        // ±éÀú¿Í»§ÒÑ¶¨·¿¼äµÄÁ´±í²¢ÏÔÊ¾·¿¼äÐÅÏ¢
+        printf("???????: %s\n", current->name);
+        printf("????ç»°: %s\n", current->phone);
+        printf("??????: %c\n", current->gender);
+        printf("???????: %s\n", current->check_in_date);
+        printf("???????: %s\n", current->booking_time);
+		printf("????: %.2lf\n", current->total_price);
+        // ?????????????????????????????
         CustomerRoomInfo* roomInfo = current->room_info;
-        printf("¿Í»§ÒÑ¶©·¿¼äÐÅÏ¢:\n");
+        printf("?????????????:\n");
         while (roomInfo != NULL) {
-            printf("·¿¼äÀàÐÍ: %s, ·¿¼ä¼Û¸ñ: %.2lf\n", roomInfo->room_type, roomInfo->room_price);
+            printf("????????: %s, ??????: %.2lf\n", roomInfo->room_type, roomInfo->room_price);
             roomInfo = roomInfo->next;
         }
 
@@ -266,55 +266,55 @@ void displayCustomerInfo() {
 
 
 void bookRoom() {
-	// ¶©·¿Ê±ÏÈÕ¹Ê¾ÏÖÓÐ·¿ÐÍ 
+	// ????????????Ð·??? 
 	displayRoomTypes();
 	 
     Customer newCustomer;
-    newCustomer.room_info = NULL; // ³õÊ¼»¯·¿¼äÐÅÏ¢Á´±í
+    newCustomer.room_info = NULL; // ????????????????
 
-    printf("ÇëÊäÈëÐÕÃû: ");
+    printf("??????????: ");
     scanf("%s", newCustomer.name);
 
-    printf("ÇëÊäÈëµç»°ºÅÂë: ");
+    printf("??????ç»°????: ");
     scanf("%s", newCustomer.phone);
 
-    printf("ÇëÊäÈëÐÔ±ð(M/F): ");
+    printf("?????????(M/F): ");
     scanf(" %c", &newCustomer.gender);
 
-    printf("ÇëÊäÈëÈë×¡ÈÕÆÚ: ");
+    printf("?????????????: ");
     scanf("%s", newCustomer.check_in_date);
 	
-//	 ¶©·¿Ê±¼äÎªµ±Ç°ÏµÍ³Ê±¼ä 
+//	 ???????????????? 
 	time_t rawtime;
 	struct tm *timeinfo;
     time(&rawtime);
 	timeinfo = localtime(&rawtime);
 	
-    char bookingTime[200];  // ¼ÙÉè booking_time ÊÇÒ»¸ö char Êý×é
+    char bookingTime[200];  // ???? booking_time ????? char ????
 	strftime(bookingTime, sizeof(bookingTime), "%Y-%m-%d-%H:%M:%S", timeinfo);
 	
 	sprintf(newCustomer.booking_time, "%s", bookingTime);
 	
 
-    // ÈÃÓÃ»§Á¬ÐøÊäÈë¶àÖÖ·¿¼äÀàÐÍÐÅÏ¢£¬Ö±µ½ÓÃ»§ÊäÈë½áÊø
+    // ?????????????????????????????????????????
     int moreRooms = 1;
     do {
         CustomerRoomInfo* newRoomInfo = (CustomerRoomInfo*)malloc(sizeof(CustomerRoomInfo));
-        printf("ÇëÊäÈë·¿¼äÀàÐÍ: ");
+        printf("????????????: ");
         scanf("%s", newRoomInfo->room_type);
         newRoomInfo->next = NULL;
 
-        // ÔÚÁ´±íÖÐ²éÕÒ¶ÔÓ¦·¿¼äÀàÐÍµÄ·¿¼äÐÅÏ¢
+        // ???????Ð²????????????????????
         HotelRoomInfo* currentRoom = hotel_room_head;
         while (currentRoom != NULL) {
             if (strcmp(currentRoom->room_type, newRoomInfo->room_type) == 0) {
-                // ÕÒµ½¶ÔÓ¦·¿¼äÀàÐÍ£¬¸üÐÂ¿Í»§µÄ·¿¼äÐÅÏ¢
+                // ?????????????????????????????
                 strcpy(newRoomInfo->room_type, currentRoom->room_type);
                 newRoomInfo->room_price = currentRoom->room_price;
                 
 				newCustomer.total_price += currentRoom->room_price;
 				currentRoom->remaining_rooms -= 1;
-                // Ìí¼Ó·¿¼äÐÅÏ¢µ½¿Í»§µÄ·¿¼äÐÅÏ¢Á´±íÖÐ
+                // ????????????????????????????
                 if (newCustomer.room_info == NULL) {
                     newCustomer.room_info = newRoomInfo;
                 } else {
@@ -329,21 +329,21 @@ void bookRoom() {
             currentRoom = currentRoom->next;
         }
 
-        printf("»¹ÓÐ¸ü¶à·¿¼äÒªÔ¤¶©Âð£¿(1-ÊÇ£¬0-·ñ): ");
+        printf("???Ð¸???????????(1-???0-??): ");
         scanf("%d", &moreRooms);
     } while (moreRooms);
 
-    // ½«ÐÂµÄ¿Í»§ÐÅÏ¢Ìí¼Óµ½¿Í»§ÐÅÏ¢Á´±íÖÐ
+    // ??????????????????????????
     insertCustomerNode(newCustomer);
 
-    // ½«ÐÂµÄ¿Í»§ÐÅÏ¢±£´æµ½ÎÄ¼þ
+    // ?????????????æµ½???
     saveCustomersToFile();
     saveRoomInfoToFile();
 }
-// ¸ù¾ÝÓÃ»§¶©·¿×Ü½ð¶î´ÓµÍµ½¸ß½øÐÐÅÅÐò 
+// ??????????????????????????? 
 void sortCustomersByTotalPrice() {
     if (customer_head == NULL || customer_head->next == NULL) {
-        return; // Á´±íÎª¿Õ»òÖ»ÓÐÒ»¸ö½Úµã£¬ÎÞÐèÅÅÐò
+        return; // ?????????????????????????
     }
 
     int swapped;
@@ -354,7 +354,7 @@ void sortCustomersByTotalPrice() {
         Customer *current = customer_head;
         while (current->next != NULL) {
             if (current->total_price > current->next->total_price) {
-                // ½»»»½ÚµãÎ»ÖÃ
+                // ???????Î»??
                 if (current == customer_head) {
                     customer_head = current->next;
                 } else {
@@ -379,18 +379,18 @@ int main() {
     
     int choice;
     do {
-       	printf("\n¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[\n");
-		printf("¨U         ¾Æµê¹ÜÀíÏµÍ³             ¨U\n");
-		printf("¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g\n");
-		printf("¨U 1. ¶©·¿                          ¨U\n");
-		printf("¨U 2. Õ¹Ê¾ËùÓÐ·¿ÐÍÐÅÏ¢              ¨U\n");
-		printf("¨U 3. Ìí¼Ó·¿ÐÍÐÅÏ¢                  ¨U\n");
-		printf("¨U 4. É¾³ý·¿ÐÍÐÅÏ¢                  ¨U\n");
-		printf("¨U 5. Õ¹Ê¾ÓÃ»§¶©·¿ÐÅÏ¢              ¨U\n");
-		printf("¨U 6. ÕûÀí¿Í»§¶©·¿¼ÇÂ¼              ¨U\n");
-		printf("¨U 7. ÍË³ö                          ¨U\n");
-		printf("¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a\n");
-		printf("ÇëÑ¡Ôñ²Ù×÷: ");
+       	printf("\n?X?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?[\n");
+		printf("?U         ????????             ?U\n");
+		printf("?d?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?g\n");
+		printf("?U 1. ????                          ?U\n");
+		printf("?U 2. ?????Ð·??????              ?U\n");
+		printf("?U 3. ?????????                  ?U\n");
+		printf("?U 4. ??????????                  ?U\n");
+		printf("?U 5. ????????????              ?U\n");
+		printf("?U 6. ?????????????              ?U\n");
+		printf("?U 7. ???                          ?U\n");
+		printf("?^?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?T?a\n");
+		printf("????????: ");
 		scanf("%d", &choice);
         switch (choice) {
             case 1:
@@ -405,25 +405,25 @@ int main() {
                     double price;
                     int totalRooms;
 
-                    printf("ÇëÊäÈëÒªÌí¼ÓµÄ·¿¼äÀàÐÍ: ");
+                    printf("??????????????????: ");
                     scanf("%s", roomType);
-                    printf("ÇëÊäÈë¼Û¸ñ: ");
+                    printf("????????: ");
                     scanf("%lf", &price);
-                    printf("ÇëÊäÈë×Ü·¿¼äÊý: ");
+                    printf("?????????????: ");
                     scanf("%d", &totalRooms);
 
                     addRoomType(roomType, price, totalRooms, totalRooms);
-                    saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼þ
+                    saveRoomInfoToFile(); // ???æµ½???
                 }
                 break;
             case 4:
                 {
                     char roomTypeToRemove[50];
-                    printf("ÇëÊäÈëÒªÉ¾³ýµÄ·¿¼äÀàÐÍ: ");
+                    printf("???????????????????: ");
                     scanf("%s", roomTypeToRemove);
 
                     removeRoomType(roomTypeToRemove);
-                    saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼þ
+                    saveRoomInfoToFile(); // ???æµ½???
                 }
                 break;
             case 5: 
@@ -434,10 +434,10 @@ int main() {
             	displayCustomerInfo();
             	break;
 			case 7:
-                saveRoomInfoToFile(); // ±£´æµ½ÎÄ¼þ
+                saveRoomInfoToFile(); // ???æµ½???
                 exit(0);
             default:
-                printf("ÎÞÐ§µÄÑ¡Ôñ!\n");
+                printf("??Ð§?????!\n");
         }
     } while (choice != 7);
 
